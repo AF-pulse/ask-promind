@@ -1,5 +1,8 @@
 import { apiFetch } from "./client"
 
-export function fetchProjects(apiKey) {
-  return apiFetch("/projects", apiKey)
+export async function fetchProjects() {
+
+  const data = await apiFetch("/projects/overview")
+
+  return data.projects
 }
