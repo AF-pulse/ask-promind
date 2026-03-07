@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { apiFetch } from "../api/apiFetch"
 
 export default function SearchScreen({ apiKey, project, onBack }) {
 
@@ -17,16 +16,26 @@ export default function SearchScreen({ apiKey, project, onBack }) {
 
     try{
 
-      const res = await apiFetch("/search",{
+      const res = await fetch("/api/search",{
         method:"POST",
-        body:{
+        headers:{
+          "Content-Type":"application/json",
+          "X-API-Key": apiKey
+        },
+        body: JSON.stringify({
           owner: project.owner,
           project: project.project,
           query
-        }
+        })
       })
 
-      setResults(res)
+      if(!res.ok){
+        throw new Error(`HTTP ${res.status}`)
+      }
+
+      const data = await res.json()
+
+      setResults(data)
 
     }catch(err){
       console.error(err)
@@ -38,16 +47,11 @@ export default function SearchScreen({ apiKey, project, onBack }) {
   return (
     <div style={{padding:40,fontFamily:"system-ui",maxWidth:900}}>
 
-      <button
-        onClick={onBack}
-        style={{marginBottom:20}}
-      >
+      <button onClick={onBack} style={{marginBottom:20}}>
         ← Back to projects
       </button>
 
-      <h2>
-        {project.label || project.project}
-      </h2>
+      <h2>{project.label || project.project}</h2>
 
       {project.description && (
         <p style={{color:"#666"}}>
