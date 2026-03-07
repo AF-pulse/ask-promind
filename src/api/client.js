@@ -1,16 +1,18 @@
 const API_BASE = "/api"
 
-export async function apiFetch(path, options = {}) {
+export async function apiFetch(path, apiKey, options = {}) {
 
   const res = await fetch(API_BASE + path, {
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "X-API-Key": apiKey
     },
     ...options
   })
 
   if (!res.ok) {
-    throw new Error(await res.text())
+    const text = await res.text()
+    throw new Error(text)
   }
 
   return res.json()
