@@ -1,18 +1,25 @@
 import { useState } from "react"
 import ApiKeyScreen from "./components/ApiKeyScreen"
 import ProjectsScreen from "./components/ProjectsScreen"
+import SearchScreen from "./components/SearchScreen"
 import { getApiKey } from "./storage/apiKey"
 
 export default function App() {
 
-  const [apiKey,setApiKey] = useState(getApiKey())
-  const [project,setProject] = useState(null)
+  const [apiKey, setApiKey] = useState(getApiKey())
+  const [project, setProject] = useState(null)
 
-  if(!apiKey){
-    return <ApiKeyScreen onSaved={setApiKey}/>
+  // 1. Ingen API-nyckel → visa nyckel-inmatning
+  if (!apiKey) {
+    return (
+      <ApiKeyScreen
+        onSaved={setApiKey}
+      />
+    )
   }
 
-  if(!project){
+  // 2. API-nyckel finns men inget projekt valt → visa projektlista
+  if (!project) {
     return (
       <ProjectsScreen
         apiKey={apiKey}
@@ -21,9 +28,12 @@ export default function App() {
     )
   }
 
+  // 3. Projekt valt → visa search-sidan
   return (
-    <div>
-      <p>Selected project: {project.label || project.project}</p>
-    </div>
+    <SearchScreen
+      apiKey={apiKey}
+      project={project}
+      onBack={() => setProject(null)}
+    />
   )
 }
