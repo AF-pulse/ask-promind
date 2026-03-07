@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { fetchProjects } from "../api/projects"
 
-export default function ProjectsScreen({ apiKey }) {
+export default function ProjectsScreen({ apiKey, onSelectProject }) {
 
   const [projects,setProjects] = useState(null)
 
@@ -9,7 +9,6 @@ export default function ProjectsScreen({ apiKey }) {
     fetchProjects(apiKey)
       .then(data => {
 
-        // sortera projekt med mest innehåll först
         const sorted = [...data].sort(
           (a,b) => (b.chat_count || 0) - (a.chat_count || 0)
         )
@@ -33,9 +32,11 @@ export default function ProjectsScreen({ apiKey }) {
 
         <div
           key={`${p.owner}-${p.project}`}
+          onClick={() => onSelectProject(p)}
           style={{
             padding:"12px 0",
-            borderBottom:"1px solid #eee"
+            borderBottom:"1px solid #eee",
+            cursor:"pointer"
           }}
         >
 
