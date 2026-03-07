@@ -1,15 +1,16 @@
-const BASE_URL = "https://YOUR-PROMIND-API"
+const API_BASE = "/api"
 
-export async function apiFetch(path, apiKey) {
+export async function apiFetch(path, options = {}) {
 
-  const res = await fetch(BASE_URL + path, {
+  const res = await fetch(API_BASE + path, {
     headers: {
-      "X-API-KEY": apiKey
-    }
+      "Content-Type": "application/json"
+    },
+    ...options
   })
 
   if (!res.ok) {
-    throw new Error("API error")
+    throw new Error(await res.text())
   }
 
   return res.json()
