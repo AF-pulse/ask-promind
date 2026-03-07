@@ -7,7 +7,16 @@ export default function ProjectsScreen({ apiKey }) {
 
   useEffect(()=>{
     fetchProjects(apiKey)
-      .then(setProjects)
+      .then(data => {
+
+        // sortera projekt med mest innehåll först
+        const sorted = [...data].sort(
+          (a,b) => (b.chat_count || 0) - (a.chat_count || 0)
+        )
+
+        setProjects(sorted)
+
+      })
       .catch(console.error)
   },[])
 
@@ -21,9 +30,32 @@ export default function ProjectsScreen({ apiKey }) {
       <h2>Select Project</h2>
 
       {projects.map(p => (
-        <div key={p.project} style={{padding:"10px 0"}}>
-          {p.project}
+
+        <div
+          key={`${p.owner}-${p.project}`}
+          style={{
+            padding:"12px 0",
+            borderBottom:"1px solid #eee"
+          }}
+        >
+
+          <div style={{fontWeight:600}}>
+            {p.label || p.project}
+          </div>
+
+          {p.description && (
+            <div style={{color:"#666",fontSize:14}}>
+              {p.description}
+            </div>
+          )}
+
+          <div style={{fontSize:12,color:"#999",marginTop:4}}>
+            {p.chat_count || 0} chats
+            {p.readOnly && " · read only"}
+          </div>
+
         </div>
+
       ))}
 
     </div>
