@@ -1,25 +1,19 @@
+import { useState } from "react"
+import ApiKeyScreen from "./components/ApiKeyScreen"
+import { getApiKey } from "./storage/apiKey"
+
 export default function App() {
 
+  const [apiKey,setApiKey] = useState(getApiKey())
+
+  if(!apiKey){
+    return <ApiKeyScreen onSaved={setApiKey}/>
+  }
+
   return (
-    <div style={{
-      fontFamily: "system-ui",
-      padding: "40px",
-      maxWidth: "600px",
-      margin: "auto"
-    }}>
-
+    <div style={{padding:40,fontFamily:"system-ui"}}>
       <h1>Ask ProMind</h1>
-
-      <p>
-        Mobile interface for retrieving knowledge from ProMind.
-      </p>
-
-      <hr />
-
-      <p>
-        Step 1 – PWA skeleton running.
-      </p>
-
+      <p>API key configured.</p>
     </div>
   )
 }
