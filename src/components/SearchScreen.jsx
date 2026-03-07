@@ -5,54 +5,17 @@ export default function SearchScreen({ apiKey, project, onBack }) {
   const [query,setQuery] = useState("")
   const [loading,setLoading] = useState(false)
   const [answer,setAnswer] = useState(null)
-  const [results,setResults] = useState(null)
+  const [sources,setSources] = useState([])
 
-  async function handleSearch(){
+  async function runSearch(e){
+
+    e.preventDefault()
 
     if(!query.trim()) return
 
     setLoading(true)
     setAnswer(null)
-
-    try{
-
-      const res = await fetch(
-        `/api/search/synthesis?project=${encodeURIComponent(project.project)}`,
-        {
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json",
-            "X-API-Key": apiKey
-          },
-          body: JSON.stringify({
-            query,
-            limit: 10
-          })
-        }
-      )
-
-      if(!res.ok){
-        throw new Error(`HTTP ${res.status}`)
-      }
-
-      const data = await res.json()
-
-      setResults(data.results || [])
-
-    }catch(err){
-      console.error("Search failed",err)
-      setResults([])
-    }
-
-    setLoading(false)
-  }
-
-  async function handleReason(){
-
-    if(!query.trim()) return
-
-    setLoading(true)
-    setResults(null)
+    setSources([])
 
     try{
 
@@ -65,7 +28,7 @@ export default function SearchScreen({ apiKey, project, onBack }) {
             "X-API-Key": apiKey
           },
           body: JSON.stringify({
-            query,
+            query: query,
             limit: 5
           })
         }
@@ -77,26 +40,24 @@ export default function SearchScreen({ apiKey, project, onBack }) {
 
       const data = await res.json()
 
-      setAnswer(data)
+      setAnswer(data.answer || "")
+      setSources(data.sources || [])
 
     }catch(err){
-      console.error("Reasoning failed",err)
-      setAnswer(null)
+      console.error("Search failed",err)
+      setAnswer("Search failed.")
     }
 
     setLoading(false)
   }
 
-  function clear(){
-    setQuery("")
-    setResults(null)
-    setAnswer(null)
-  }
-
   return (
-    <div style={{padding:40,fontFamily:"system-ui",maxWidth:900}}>
+    <div style={{padding:40,fontFamily:"system-ui"}}>
 
-      <button onClick={onBack} style={{marginBottom:20}}>
+      <button
+        onClick={onBack}
+        style={{marginBottom:20}}
+      >
         ← Back to projects
       </button>
 
@@ -108,115 +69,78 @@ export default function SearchScreen({ apiKey, project, onBack }) {
         </p>
       )}
 
-      <div style={{marginTop:30}}>
+      <form
+        onSubmit={runSearch}
+        style={{marginTop:30}}
+      >
 
         <input
           value={query}
-          onChange={(e)=>setQuery(e.target.value)}
-          placeholder="Ställ en fråga om projektets artefakter…"
+          onChange={e=>setQuery(e.target.value)}
+          placeholder="Search knowledge..."
           style={{
-            padding:"8px 10px",
-            width:"60%",
-            marginRight:8
+            width:"70%",
+            padding:10,
+            fontSize:16,
+            marginRight:10
           }}
         />
 
-        <button onClick={handleSearch}>
-          🔎 Sök
-        </button>
-
-        <button onClick={handleReason} style={{marginLeft:6}}>
-          💡 Resonera
-        </button>
-
-        {(results || answer) && (
-          <button onClick={clear} style={{marginLeft:12}}>
-            Rensa
-          </button>
-        )}
-
-      </div>
-
-      {loading && <p style={{marginTop:20}}>⏳ Söker…</p>}
-
-      {/* Reasoning answer */}
-
-      {answer && answer.answer && (
-        <div
+        <button
+          type="submit"
           style={{
-            background:"#f9fafb",
-            padding:"1rem",
-            borderRadius:6,
-            marginTop:"1rem"
+            padding:"10px 16px"
           }}
         >
-          <h4>Resonerande svar</h4>
-          <div style={{whiteSpace:"pre-wrap"}}>
-            {answer.answer}
+          Ask
+        </button>
+
+      </form>
+
+      {loading && (
+        <p style={{marginTop:20}}>
+          Searching…
+        </p>
+      )}
+
+      {answer && (
+        <div
+          style={{
+            marginTop:30,
+            background:"#f7f7f7",
+            padding:20,
+            borderRadius:6
+          }}
+        >
+          <h3>Answer</h3>
+
+          <div
+            style={{
+              whiteSpace:"pre-wrap",
+              lineHeight:1.5
+            }}
+          >
+            {answer}
           </div>
 
-          {answer.sources?.length > 0 && (
-            <div style={{marginTop:"1rem",fontSize:13}}>
-              <strong>Källor:</strong>
+          {sources.length > 0 && (
+            <div style={{marginTop:20,fontSize:13}}>
+
+              <strong>Sources</strong>
+
               <ul>
-                {answer.sources.map((s,idx)=>(
-                  <li key={idx}>
-                    Artefakt {s.artifact_id}
+                {sources.map((s,i)=>(
+                  <li key={i}>
+                    Artifact {s.artifact_id}
                     {s.heading ? ` – ${s.heading}` : ""}
                   </li>
                 ))}
               </ul>
+
             </div>
           )}
 
         </div>
-      )}
-
-      {/* Search results */}
-
-      {results && (
-        <ul style={{paddingLeft:0,marginTop:20}}>
-
-          {results.length === 0 && <p>Inga träffar.</p>}
-
-          {results.map((r)=>{
-
-            const preview =
-              r.content && r.content.length > 160
-                ? r.content.slice(0,160)+"…"
-                : r.content
-
-            return (
-              <li
-                key={r.id}
-                style={{
-                  listStyle:"none",
-                  padding:"0.75rem 0",
-                  borderBottom:"1px solid #eee"
-                }}
-              >
-
-                <div style={{fontWeight:600}}>
-                  {r.heading || "Sektion utan rubrik"}
-                </div>
-
-                {preview && (
-                  <div
-                    style={{
-                      fontSize:13,
-                      color:"#444",
-                      marginTop:6
-                    }}
-                  >
-                    {preview}
-                  </div>
-                )}
-
-              </li>
-            )
-          })}
-
-        </ul>
       )}
 
     </div>
