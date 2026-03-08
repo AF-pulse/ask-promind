@@ -1,7 +1,4 @@
-const API_BASE =
-  import.meta.env.DEV
-    ? "/api"
-    : "https://promind.fly.dev/api"
+const API_BASE = "https://promind.fly.dev/api"
 
 export async function apiFetch(path, apiKey, options = {}) {
 
