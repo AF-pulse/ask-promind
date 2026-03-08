@@ -3,8 +3,6 @@ const API_BASE =
     ? "/api"
     : "https://promind.fly.dev/api"
 
-console.log("API_BASE =", API_BASE)
-
 export async function apiFetch(path, apiKey, options = {}) {
 
   const res = await fetch(API_BASE + path, {
