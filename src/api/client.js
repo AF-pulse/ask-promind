@@ -1,4 +1,7 @@
-const API_BASE = __API_BASE__
+const API_BASE =
+  import.meta.env.DEV
+    ? "/api"
+    : "https://promind.fly.dev/api"
 
 console.log("API_BASE =", API_BASE)
 
