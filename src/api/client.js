@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE
+const API_BASE = __API_BASE__
 
 export async function apiFetch(path, apiKey, options = {}) {
 
