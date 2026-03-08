@@ -13,14 +13,8 @@ export default defineConfig(({ mode }) => ({
     )
   },
 
-  server: {
-    proxy: {
-      "/api": {
-        target: "https://promind.fly.dev",
-        changeOrigin: true,
-        secure: true
-      }
-    }
+  build: {
+    sourcemap: true
   }
 
 }))
