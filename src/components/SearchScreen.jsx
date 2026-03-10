@@ -32,8 +32,8 @@ export default function SearchScreen({ apiKey, project, onBack }) {
 
     const endpoint =
       mode === "reason"
-        ? "/api/search/synthesis/reason"
-        : "/api/search/synthesis"
+        ? "/search/synthesis/reason"
+        : "/search/synthesis"
 
     try{
 
@@ -78,27 +78,23 @@ export default function SearchScreen({ apiKey, project, onBack }) {
 
   function buildPrompt(){
 
-    if(mode === "fast"){
+    const artifactText =
+      (results || [])
+      .map((r,i)=>{
 
-      const artifactText =
-        (results || [])
-        .map((r,i)=>{
+        const content =
+          (r.content || "")
+          .replace(/\s+/g," ")
+          .slice(0,1200)
 
-          const content =
-            (r.content || "")
-            .replace(/\s+/g," ")
-            .slice(0,1200)
-
-          return `Artifact ${i+1}: ${r.heading}
+        return `Artifact ${i+1}: ${r.heading}
 
 ${content}`
 
-        })
-        .join("\n\n")
+      })
+      .join("\n\n")
 
-      return `You are continuing structured reasoning based on persistent knowledge artifacts.
-
-User question:
+    return `User question:
 ${query}
 
 Relevant artifacts:
@@ -107,38 +103,10 @@ ${artifactText}
 
 Instructions:
 Use the artifacts above as primary context.
-Explain your reasoning clearly.
-If artifacts disagree, explain the tension and resolve it.
+Explain reasoning clearly.
 
 Answer:
 `
-    }
-
-    if(mode === "reason"){
-
-      const src =
-        (sources || [])
-        .map(s=>`- ${s.heading || "artifact"}`)
-        .join("\n")
-
-      return `User question:
-${query}
-
-ProMind reasoning output:
-${answer}
-
-Sources referenced:
-${src}
-
-Instructions:
-Improve, extend, or critique this reasoning.
-Continue the thinking process and produce a clearer final answer.
-
-Response:
-`
-    }
-
-    return ""
   }
 
   function copyPrompt(){
@@ -164,36 +132,32 @@ Response:
         ← Back to projects
       </button>
 
-      <h1 style={{marginBottom:6}}>
+      <h1 style={{marginBottom:10}}>
         {project.label || project.project}
       </h1>
 
-      <p style={{color:"#666",marginBottom:30}}>
-        Ask ProMind knowledge
-      </p>
-
-      <form onSubmit={runSearch}>
+      <form onSubmit={runSearch} style={{marginBottom:30}}>
 
         <input
           value={query}
           onChange={e=>setQuery(e.target.value)}
-          placeholder="Ask your knowledge base..."
+          placeholder="Ask your knowledge..."
           style={{
             width:"100%",
             padding:16,
             fontSize:18,
             borderRadius:14,
             border:"1px solid #ddd",
-            marginBottom:20
+            marginBottom:15
           }}
         />
 
         <button
           type="submit"
           style={{
-            padding:"14px 26px",
+            padding:"12px 22px",
             fontSize:16,
-            borderRadius:14,
+            borderRadius:12,
             border:"none",
             background:"#2b6df8",
             color:"white",
@@ -201,18 +165,18 @@ Response:
             cursor:"pointer"
           }}
         >
-          Search knowledge
+          Search
         </button>
 
       </form>
 
       {loading && (
-        <p style={{marginTop:20}}>Searching…</p>
+        <p>Searching…</p>
       )}
 
       {context && (
 
-        <div style={{marginTop:40}}>
+        <div style={{marginBottom:30}}>
 
           <button
             onClick={copyPrompt}
@@ -236,7 +200,7 @@ Response:
 
       {results.length > 0 && (
 
-        <div style={{marginTop:30}}>
+        <div style={{marginBottom:30}}>
 
           <button
             onClick={()=>setShowArtifacts(!showArtifacts)}
@@ -300,7 +264,7 @@ Response:
 
       {context && (
 
-        <div style={{marginTop:30}}>
+        <div>
 
           <button
             onClick={()=>setShowContext(!showContext)}
