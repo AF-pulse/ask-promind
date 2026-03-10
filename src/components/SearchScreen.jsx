@@ -35,7 +35,7 @@ export default function SearchScreen({ apiKey, project, onBack }) {
     try{
 
       const res = await fetch(
-        endpoint,
+        `${endpoint}?project=${encodeURIComponent(project.project)}`,
         {
           method:"POST",
           headers:{
@@ -43,7 +43,6 @@ export default function SearchScreen({ apiKey, project, onBack }) {
             "X-API-Key": apiKey
           },
           body: JSON.stringify({
-            project: project.project,
             query: query,
             limit: 5
           })
@@ -162,10 +161,7 @@ Response:
   return (
     <div style={{padding:40,fontFamily:"system-ui"}}>
 
-      <button
-        onClick={onBack}
-        style={{marginBottom:20}}
-      >
+      <button onClick={onBack} style={{marginBottom:20}}>
         ← Back to projects
       </button>
 
@@ -199,10 +195,7 @@ Response:
 
       </div>
 
-      <form
-        onSubmit={runSearch}
-        style={{marginTop:20}}
-      >
+      <form onSubmit={runSearch} style={{marginTop:20}}>
 
         <input
           value={query}
@@ -216,12 +209,7 @@ Response:
           }}
         />
 
-        <button
-          type="submit"
-          style={{
-            padding:"10px 16px"
-          }}
-        >
+        <button type="submit">
           Ask
         </button>
 
@@ -235,44 +223,21 @@ Response:
 
       {mode === "reason" && answer && (
 
-        <div
-          style={{
-            marginTop:30,
-            background:"#f7f7f7",
-            padding:20,
-            borderRadius:6
-          }}
-        >
+        <div style={{
+          marginTop:30,
+          background:"#f7f7f7",
+          padding:20,
+          borderRadius:6
+        }}>
 
           <h3>Answer</h3>
 
-          <div
-            style={{
-              whiteSpace:"pre-wrap",
-              lineHeight:1.6
-            }}
-          >
+          <div style={{
+            whiteSpace:"pre-wrap",
+            lineHeight:1.6
+          }}>
             {answer}
           </div>
-
-          {sources.length > 0 && (
-
-            <div style={{marginTop:20,fontSize:13}}>
-
-              <strong>Sources</strong>
-
-              <ul>
-                {sources.map((s,i)=>(
-                  <li key={i}>
-                    Artifact {s.artifact_id}
-                    {s.heading ? ` – ${s.heading}` : ""}
-                  </li>
-                ))}
-              </ul>
-
-            </div>
-
-          )}
 
         </div>
 
@@ -280,14 +245,12 @@ Response:
 
       {mode === "fast" && results.length > 0 && (
 
-        <div
-          style={{
-            marginTop:30,
-            background:"#f7f7f7",
-            padding:20,
-            borderRadius:6
-          }}
-        >
+        <div style={{
+          marginTop:30,
+          background:"#f7f7f7",
+          padding:20,
+          borderRadius:6
+        }}>
 
           <h3>Relevant artifacts</h3>
 
@@ -302,32 +265,25 @@ Response:
 
               return (
 
-                <li
-                  key={i}
-                  style={{marginBottom:16}}
-                >
+                <li key={i} style={{marginBottom:16}}>
 
                   <div style={{fontWeight:600}}>
                     {r.heading}
                   </div>
 
-                  <div
-                    style={{
-                      fontSize:13,
-                      color:"#555",
-                      marginTop:4
-                    }}
-                  >
+                  <div style={{
+                    fontSize:13,
+                    color:"#555",
+                    marginTop:4
+                  }}>
                     {preview}…
                   </div>
 
-                  <div
-                    style={{
-                      fontSize:11,
-                      color:"#999",
-                      marginTop:4
-                    }}
-                  >
+                  <div style={{
+                    fontSize:11,
+                    color:"#999",
+                    marginTop:4
+                  }}>
                     score {r.score.toFixed(3)}
                   </div>
 
@@ -367,15 +323,13 @@ Response:
 
           {showContext && (
 
-            <pre
-              style={{
-                marginTop:15,
-                background:"#f0f0f0",
-                padding:15,
-                overflow:"auto",
-                fontSize:12
-              }}
-            >
+            <pre style={{
+              marginTop:15,
+              background:"#f0f0f0",
+              padding:15,
+              overflow:"auto",
+              fontSize:12
+            }}>
 {JSON.stringify(context,null,2)}
             </pre>
 
