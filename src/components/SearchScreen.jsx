@@ -13,6 +13,8 @@ export default function SearchScreen({ apiKey, project, onBack }) {
   const [results,setResults] = useState([])
 
   const [context,setContext] = useState(null)
+
+  const [showArtifacts,setShowArtifacts] = useState(false)
   const [showContext,setShowContext] = useState(false)
 
   async function runSearch(e){
@@ -30,8 +32,8 @@ export default function SearchScreen({ apiKey, project, onBack }) {
 
     const endpoint =
       mode === "reason"
-        ? "/search/synthesis/reason"
-        : "/search/synthesis"
+        ? "/api/search/synthesis/reason"
+        : "/api/search/synthesis"
 
     try{
 
@@ -40,7 +42,6 @@ export default function SearchScreen({ apiKey, project, onBack }) {
         apiKey,
         {
           method:"POST",
-
           body: JSON.stringify({
             query: query,
             limit: 5
@@ -151,141 +152,147 @@ Response:
   }
 
   return (
-    <div style={{padding:40,fontFamily:"system-ui"}}>
 
-      <button onClick={onBack} style={{marginBottom:20}}>
+    <div style={{
+      padding:40,
+      fontFamily:"system-ui",
+      maxWidth:900,
+      margin:"0 auto"
+    }}>
+
+      <button onClick={onBack} style={{marginBottom:30}}>
         ← Back to projects
       </button>
 
-      <h2>{project.label || project.project}</h2>
+      <h1 style={{marginBottom:6}}>
+        {project.label || project.project}
+      </h1>
 
-      {project.description && (
-        <p style={{color:"#666"}}>
-          {project.description}
-        </p>
-      )}
+      <p style={{color:"#666",marginBottom:30}}>
+        Ask ProMind knowledge
+      </p>
 
-      <div style={{marginTop:20}}>
-
-        <label>
-          <input
-            type="radio"
-            checked={mode==="fast"}
-            onChange={()=>setMode("fast")}
-          />
-          Fast search
-        </label>
-
-        <label style={{marginLeft:20}}>
-          <input
-            type="radio"
-            checked={mode==="reason"}
-            onChange={()=>setMode("reason")}
-          />
-          Reasoning
-        </label>
-
-      </div>
-
-      <form onSubmit={runSearch} style={{marginTop:20}}>
+      <form onSubmit={runSearch}>
 
         <input
           value={query}
           onChange={e=>setQuery(e.target.value)}
-          placeholder="Search knowledge..."
+          placeholder="Ask your knowledge base..."
           style={{
-            width:"65%",
-            padding:10,
-            fontSize:16,
-            marginRight:10
+            width:"100%",
+            padding:16,
+            fontSize:18,
+            borderRadius:14,
+            border:"1px solid #ddd",
+            marginBottom:20
           }}
         />
 
-        <button type="submit">
-          Ask
+        <button
+          type="submit"
+          style={{
+            padding:"14px 26px",
+            fontSize:16,
+            borderRadius:14,
+            border:"none",
+            background:"#2b6df8",
+            color:"white",
+            fontWeight:600,
+            cursor:"pointer"
+          }}
+        >
+          Search knowledge
         </button>
 
       </form>
 
       {loading && (
-        <p style={{marginTop:20}}>
-          Searching…
-        </p>
+        <p style={{marginTop:20}}>Searching…</p>
       )}
 
-      {mode === "reason" && answer && (
+      {context && (
 
-        <div style={{
-          marginTop:30,
-          background:"#f7f7f7",
-          padding:20,
-          borderRadius:6
-        }}>
+        <div style={{marginTop:40}}>
 
-          <h3>Answer</h3>
-
-          <div style={{
-            whiteSpace:"pre-wrap",
-            lineHeight:1.6
-          }}>
-            {answer}
-          </div>
+          <button
+            onClick={copyPrompt}
+            style={{
+              padding:"16px 26px",
+              fontSize:16,
+              borderRadius:16,
+              border:"none",
+              background:"#111",
+              color:"white",
+              fontWeight:700,
+              cursor:"pointer"
+            }}
+          >
+            📋 COPY PROMPT FOR GPT
+          </button>
 
         </div>
 
       )}
 
-      {mode === "fast" && results.length > 0 && (
+      {results.length > 0 && (
 
-        <div style={{
-          marginTop:30,
-          background:"#f7f7f7",
-          padding:20,
-          borderRadius:6
-        }}>
+        <div style={{marginTop:30}}>
 
-          <h3>Relevant artifacts</h3>
+          <button
+            onClick={()=>setShowArtifacts(!showArtifacts)}
+          >
+            {showArtifacts ? "Hide artifacts" : "Show artifacts"}
+          </button>
 
-          <ul style={{paddingLeft:20}}>
+          {showArtifacts && (
 
-            {results.map((r,i)=>{
+            <div style={{
+              marginTop:20,
+              background:"#f7f7f7",
+              padding:20,
+              borderRadius:16
+            }}>
 
-              const preview =
-                (r.content || "")
-                .replace(/\s+/g," ")
-                .slice(0,220)
+              {results.map((r,i)=>{
 
-              return (
+                const preview =
+                  (r.content || "")
+                  .replace(/\s+/g," ")
+                  .slice(0,240)
 
-                <li key={i} style={{marginBottom:16}}>
+                return (
 
-                  <div style={{fontWeight:600}}>
-                    {r.heading}
+                  <div key={i} style={{marginBottom:20}}>
+
+                    <div style={{fontWeight:600}}>
+                      {r.heading}
+                    </div>
+
+                    <div style={{
+                      fontSize:14,
+                      color:"#555",
+                      marginTop:4
+                    }}>
+                      {preview}…
+                    </div>
+
+                    <div style={{
+                      fontSize:11,
+                      color:"#999",
+                      marginTop:4
+                    }}>
+                      score {r.score.toFixed(3)}
+                    </div>
+
                   </div>
 
-                  <div style={{
-                    fontSize:13,
-                    color:"#555",
-                    marginTop:4
-                  }}>
-                    {preview}…
-                  </div>
+                )
 
-                  <div style={{
-                    fontSize:11,
-                    color:"#999",
-                    marginTop:4
-                  }}>
-                    score {r.score.toFixed(3)}
-                  </div>
+              })}
 
-                </li>
+            </div>
 
-              )
-
-            })}
-
-          </ul>
+          )}
 
         </div>
 
@@ -296,21 +303,9 @@ Response:
         <div style={{marginTop:30}}>
 
           <button
-            onClick={copyPrompt}
-            style={{
-              fontWeight:700,
-              padding:"12px 18px",
-              fontSize:15
-            }}
-          >
-            📋 COPY PROMPT FOR LLM
-          </button>
-
-          <button
             onClick={()=>setShowContext(!showContext)}
-            style={{marginLeft:12}}
           >
-            {showContext ? "Hide" : "Show"} technical context
+            {showContext ? "Hide technical context" : "Show technical context"}
           </button>
 
           {showContext && (
@@ -320,7 +315,8 @@ Response:
               background:"#f0f0f0",
               padding:15,
               overflow:"auto",
-              fontSize:12
+              fontSize:12,
+              borderRadius:12
             }}>
 {JSON.stringify(context,null,2)}
             </pre>
