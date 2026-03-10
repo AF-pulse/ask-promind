@@ -35,15 +35,14 @@ export default function SearchScreen({ apiKey, project, onBack }) {
     try{
 
       const res = await fetch(
-        endpoint,
+        `${endpoint}?project=${encodeURIComponent(project.project)}`,
         {
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json",
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
             "X-API-Key": apiKey
           },
           body: JSON.stringify({
-            project: project.project,
             query: query,
             limit: 5
           })
