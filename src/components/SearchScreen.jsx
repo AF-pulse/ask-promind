@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { apiFetch } from "../api/client"
 
 export default function SearchScreen({ apiKey, project, onBack }) {
 
@@ -34,14 +35,11 @@ export default function SearchScreen({ apiKey, project, onBack }) {
 
     try{
 
-      const res = await fetch(
+      const data = await apiFetch(
         `${endpoint}?project=${encodeURIComponent(project.project)}`,
+        apiKey,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-Key": apiKey
-          },
           body: JSON.stringify({
             query: query,
             limit: 5
