@@ -21,12 +21,11 @@ export default function SearchScreen({ apiKey, project, onBack }) {
     try{
 
       const data = await apiFetch(
-        "/search/synthesis/reason",
+        `/search/synthesis/reason?project=${encodeURIComponent(project.project)}`,
         apiKey,
         {
           method:"POST",
           body: JSON.stringify({
-            project: project.project,
             query: query,
             limit: 5
           })
