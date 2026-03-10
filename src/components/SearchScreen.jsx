@@ -35,7 +35,7 @@ export default function SearchScreen({ apiKey, project, onBack }) {
     try{
 
       const res = await fetch(
-        `${endpoint}?project=${encodeURIComponent(project.project)}`,
+        endpoint,
         {
           method:"POST",
           headers:{
@@ -43,6 +43,7 @@ export default function SearchScreen({ apiKey, project, onBack }) {
             "X-API-Key": apiKey
           },
           body: JSON.stringify({
+            project: project.project,
             query: query,
             limit: 5
           })
@@ -50,7 +51,8 @@ export default function SearchScreen({ apiKey, project, onBack }) {
       )
 
       if(!res.ok){
-        throw new Error(`HTTP ${res.status}`)
+        const text = await res.text()
+        throw new Error(text)
       }
 
       const data = await res.json()
@@ -62,7 +64,11 @@ export default function SearchScreen({ apiKey, project, onBack }) {
 
       }else{
 
-        setResults(data.results || [])
+        const sorted =
+          (data.results || [])
+          .sort((a,b)=>b.score-a.score)
+
+        setResults(sorted)
 
       }
 
@@ -70,7 +76,7 @@ export default function SearchScreen({ apiKey, project, onBack }) {
 
     }catch(err){
 
-      console.error("Search failed",err)
+      console.error(err)
       setAnswer("Search failed.")
 
     }
@@ -82,10 +88,14 @@ export default function SearchScreen({ apiKey, project, onBack }) {
 
     if(mode === "fast"){
 
-      const artifactText = (results || [])
+      const artifactText =
+        (results || [])
         .map((r,i)=>{
 
-          const content = (r.content || "").slice(0,1200)
+          const content =
+            (r.content || "")
+            .replace(/\s+/g," ")
+            .slice(0,1200)
 
           return `Artifact ${i+1}: ${r.heading}
 
@@ -106,7 +116,7 @@ ${artifactText}
 Instructions:
 Use the artifacts above as primary context.
 Explain your reasoning clearly.
-If the artifacts conflict, explain the tension.
+If artifacts disagree, explain the tension and resolve it.
 
 Answer:
 `
@@ -114,7 +124,8 @@ Answer:
 
     if(mode === "reason"){
 
-      const src = (sources || [])
+      const src =
+        (sources || [])
         .map(s=>`- ${s.heading || "artifact"}`)
         .join("\n")
 
@@ -124,12 +135,12 @@ ${query}
 ProMind reasoning output:
 ${answer}
 
-Sources used:
+Sources referenced:
 ${src}
 
 Instructions:
-Expand, critique, or improve this reasoning.
-Continue the thinking process.
+Improve, extend, or critique this reasoning.
+Continue the thinking process and produce a clearer final answer.
 
 Response:
 `
@@ -166,35 +177,7 @@ Response:
         </p>
       )}
 
-      <form
-        onSubmit={runSearch}
-        style={{marginTop:30}}
-      >
-
-        <input
-          value={query}
-          onChange={e=>setQuery(e.target.value)}
-          placeholder="Search knowledge..."
-          style={{
-            width:"60%",
-            padding:10,
-            fontSize:16,
-            marginRight:10
-          }}
-        />
-
-        <button
-          type="submit"
-          style={{
-            padding:"10px 16px"
-          }}
-        >
-          Ask
-        </button>
-
-      </form>
-
-      <div style={{marginTop:15}}>
+      <div style={{marginTop:20}}>
 
         <label>
           <input
@@ -215,6 +198,34 @@ Response:
         </label>
 
       </div>
+
+      <form
+        onSubmit={runSearch}
+        style={{marginTop:20}}
+      >
+
+        <input
+          value={query}
+          onChange={e=>setQuery(e.target.value)}
+          placeholder="Search knowledge..."
+          style={{
+            width:"65%",
+            padding:10,
+            fontSize:16,
+            marginRight:10
+          }}
+        />
+
+        <button
+          type="submit"
+          style={{
+            padding:"10px 16px"
+          }}
+        >
+          Ask
+        </button>
+
+      </form>
 
       {loading && (
         <p style={{marginTop:20}}>
@@ -238,7 +249,7 @@ Response:
           <div
             style={{
               whiteSpace:"pre-wrap",
-              lineHeight:1.5
+              lineHeight:1.6
             }}
           >
             {answer}
@@ -278,25 +289,53 @@ Response:
           }}
         >
 
-          <h3>Artifacts</h3>
+          <h3>Relevant artifacts</h3>
 
-          <ul>
+          <ul style={{paddingLeft:20}}>
 
-            {results.map((r,i)=>(
+            {results.map((r,i)=>{
 
-              <li key={i} style={{marginBottom:10}}>
+              const preview =
+                (r.content || "")
+                .replace(/\s+/g," ")
+                .slice(0,220)
 
-                <strong>{r.heading}</strong>
+              return (
 
-                {r.content && (
-                  <div style={{fontSize:13,color:"#555"}}>
-                    {r.content.slice(0,200)}...
+                <li
+                  key={i}
+                  style={{marginBottom:16}}
+                >
+
+                  <div style={{fontWeight:600}}>
+                    {r.heading}
                   </div>
-                )}
 
-              </li>
+                  <div
+                    style={{
+                      fontSize:13,
+                      color:"#555",
+                      marginTop:4
+                    }}
+                  >
+                    {preview}…
+                  </div>
 
-            ))}
+                  <div
+                    style={{
+                      fontSize:11,
+                      color:"#999",
+                      marginTop:4
+                    }}
+                  >
+                    score {r.score.toFixed(3)}
+                  </div>
+
+                </li>
+
+              )
+
+            })}
 
           </ul>
 
@@ -311,8 +350,9 @@ Response:
           <button
             onClick={copyPrompt}
             style={{
-              fontWeight:600,
-              padding:"10px 16px"
+              fontWeight:700,
+              padding:"12px 18px",
+              fontSize:15
             }}
           >
             📋 COPY PROMPT FOR LLM
@@ -320,7 +360,7 @@ Response:
 
           <button
             onClick={()=>setShowContext(!showContext)}
-            style={{marginLeft:10}}
+            style={{marginLeft:12}}
           >
             {showContext ? "Hide" : "Show"} technical context
           </button>
@@ -332,7 +372,8 @@ Response:
                 marginTop:15,
                 background:"#f0f0f0",
                 padding:15,
-                overflow:"auto"
+                overflow:"auto",
+                fontSize:12
               }}
             >
 {JSON.stringify(context,null,2)}
