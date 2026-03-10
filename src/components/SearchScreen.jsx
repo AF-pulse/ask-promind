@@ -30,8 +30,8 @@ export default function SearchScreen({ apiKey, project, onBack }) {
 
     const endpoint =
       mode === "reason"
-        ? "/api/search/synthesis/reason"
-        : "/api/search/synthesis"
+        ? "/search/synthesis/reason"
+        : "/search/synthesis"
 
     try{
 
@@ -39,20 +39,13 @@ export default function SearchScreen({ apiKey, project, onBack }) {
         `${endpoint}?project=${encodeURIComponent(project.project)}`,
         apiKey,
         {
-          method: "POST",
-          body: JSON.stringify({
+          method:"POST",
+          body:{
             query: query,
             limit: 5
-          })
+          }
         }
       )
-
-      if(!res.ok){
-        const text = await res.text()
-        throw new Error(text)
-      }
-
-      const data = await res.json()
 
       if(mode === "reason"){
 
