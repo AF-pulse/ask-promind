@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { apiFetch } from "../api/client"
 
 export default function SearchScreen({ apiKey, project, onBack }) {
 
@@ -19,26 +20,18 @@ export default function SearchScreen({ apiKey, project, onBack }) {
 
     try{
 
-      const res = await fetch(
-        `/api/search/synthesis/reason?project=${encodeURIComponent(project.project)}`,
+      const data = await apiFetch(
+        "/search/synthesis/reason",
+        apiKey,
         {
           method:"POST",
-          headers:{
-            "Content-Type":"application/json",
-            "X-API-Key": apiKey
-          },
           body: JSON.stringify({
+            project: project.project,
             query: query,
             limit: 5
           })
         }
       )
-
-      if(!res.ok){
-        throw new Error(`HTTP ${res.status}`)
-      }
-
-      const data = await res.json()
 
       setAnswer(data.answer || "")
       setSources(data.sources || [])
