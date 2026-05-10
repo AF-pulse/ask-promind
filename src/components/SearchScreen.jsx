@@ -44,7 +44,7 @@ export default function SearchScreen({ apiKey, project, onBack }) {
           method:"POST",
           body: JSON.stringify({
             query: query,
-            limit: 5
+            limit: 25
           })
         }
       )
